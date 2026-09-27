@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Study Companion",
+  "description": "Capture the active tab audio, transcribe it, ask questions, and archive each learning session.",
+  "version": "0.3.10",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "activeTab",
+    "offscreen",
+    "scripting",
+    "sidePanel",
+    "storage",
+    "tabCapture",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:8765/*",
+    "http://localhost:8765/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "打开 Study Companion 并授权当前标签页"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  }
+}

@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Study Companion</title>
+    <link rel="stylesheet" href="sidepanel.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div class="logo" aria-hidden="true">≋</div>
+        <div class="page-copy">
+          <div id="pageTitle" class="page-title">正在读取当前网页…</div>
+          <div class="header-meta">
+            <span id="liveDot" class="live-dot idle"></span>
+            <span id="status">先配置转写参数，再点击开始采集</span>
+          </div>
+        </div>
+        <button id="modelSettingsButton" class="icon-button" type="button" aria-label="对话模型设置">⚙</button>
+      </header>
+
+      <section class="capture-strip">
+        <button id="captureConfigSummary" class="capture-config-summary" type="button" aria-expanded="false" aria-controls="captureConfigPanel">
+          <span id="captureConfigTitle">本地识别 · 自动语言</span>
+          <small id="captureConfigMeta">点击调整转写参数</small>
+        </button>
+        <button id="startButton" class="button primary capture-action" type="button">开始采集</button>
+        <button id="stopButton" class="button danger capture-action hidden" type="button" disabled>结束采集</button>
+
+        <div id="captureConfigPanel" class="capture-config-panel hidden">
+          <header class="capture-config-header">
+            <div>
+              <strong>转写设置</strong>
+              <span id="serverBadge" class="server-badge offline">服务未连接</span>
+            </div>
+            <button id="closeCaptureConfigButton" class="icon-button" type="button" aria-label="关闭转写设置">×</button>
+          </header>
+          <div id="pageUrl" class="page-url"></div>
+          <div class="provider-heading">
+            <span>转写方式</span>
+            <span id="providerPrice" class="provider-price">本地免费</span>
+          </div>
+          <div class="provider-switch" aria-label="选择转写方式">
+            <button id="localProviderButton" class="provider-choice active" type="button" aria-pressed="true">
+              本地识别<small>免费 · 隐私优先</small>
+            </button>
+            <button id="qwenProviderButton" class="provider-choice" type="button" aria-pressed="false">
+              阿里云识别<small>更准 · 支持专业词</small>
+            </button>
+            <select id="provider" class="hidden" aria-hidden="true" tabindex="-1">
+              <option value="local-funasr">本地 FunASR</option>
+              <option value="qwen-cloud">阿里云 Qwen</option>
+            </select>
+          </div>
+          <div class="capture-settings">
+            <label>模型
+              <select id="asrModelSummary">
+                <option value="local-funasr">本地 FunASR</option>
+                <option value="qwen-audio-3.1-asr-flash-streaming">Qwen Audio 3.1 · 推荐</option>
+                <option value="qwen-audio-3.0-asr-flash-streaming">Qwen Audio 3.0 · 固定价</option>
+              </select>
+            </label>
+            <label>语言
+              <select id="language">
+                <option value="auto">自动</option>
+                <option value="zh">中文</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+            <button id="asrSettingsButton" class="button asr-settings-button hidden" type="button">配置云端</button>
+          </div>
+          <div id="providerDetail" class="provider-detail">本地模型已加载后，音频不会离开本机。</div>
+        </div>
+      </section>
+
+      <nav class="content-toolbar" aria-label="Session 内容">
+        <div class="view-tabs" role="tablist" aria-label="切换内容区域">
+          <button id="transcriptViewButton" class="view-tab active" type="button" role="tab" aria-selected="true" aria-controls="transcriptPane">
+            逐字稿 <small id="transcriptTabMeta">0 字</small><span id="unseenTranscriptBadge" class="unseen-badge hidden"></span>
+          </button>
+          <button id="chatViewButton" class="view-tab" type="button" role="tab" aria-selected="false" aria-controls="chatPane">
+            问答 <small id="chatTabMeta">0 轮</small>
+          </button>
+        </div>
+        <div class="session-actions">
+          <div class="popover-anchor">
+            <button id="downloadButton" class="toolbar-button" type="button" aria-expanded="false" aria-label="下载当前 Session">↓</button>
+          <div id="downloadMenu" class="download-menu hidden" role="menu" aria-label="下载当前 Session">
+            <button type="button" data-format="md">Markdown</button>
+            <button type="button" data-format="txt">TXT</button>
+            <button type="button" data-format="json">JSON</button>
+            <button type="button" data-format="srt">SRT</button>
+            <button type="button" data-format="vtt">VTT</button>
+          </div>
+          </div>
+          <button id="newSessionButton" class="toolbar-button" type="button" disabled>＋新建</button>
+          <button id="historyButton" class="toolbar-button" type="button">历史</button>
+        </div>
+      </nav>
+
+      <section id="workspace" class="workspace transcript-view">
+        <section id="transcriptPane" class="pane transcript-pane" aria-label="实时逐字稿">
+          <header class="pane-header">
+            <strong>实时逐字稿</strong>
+            <span id="transcriptCount" class="pane-meta">0 字</span>
+          </header>
+          <div class="pane-body transcript-body">
+            <div id="transcript" class="transcript empty-state">开始学习后，实时逐字稿会显示在这里。</div>
+            <div id="partialTranscript" class="partial hidden"></div>
+          </div>
+        </section>
+
+        <section id="chatPane" class="pane chat-pane hidden" aria-label="当前 Session 连续问答">
+          <header class="pane-header">
+            <strong>连续问答</strong>
+            <span id="roundCount" class="pane-meta">0 轮</span>
+          </header>
+          <div id="messages" class="messages empty-state">问题和回答只跟随当前 Session 保存。</div>
+        </section>
+
+        <form id="chatForm" class="composer">
+          <div class="context-row">
+            <label class="context-choice">
+              <input id="includeTranscript" type="checkbox" checked disabled>
+              <span>本次携带逐字稿</span>
+            </label>
+            <span class="help-wrap">
+              <button class="help-button" type="button" aria-label="查看上下文超限处理说明" aria-describedby="contextHelp">?</button>
+              <span id="contextHelp" class="context-tooltip" role="tooltip">若模型返回上下文长度不足，将只保留最近 50% 的逐字稿自动重试一次；仍失败则停止并显示原始错误。</span>
+            </span>
+            <span id="contextSize" class="context-size">0 字</span>
+          </div>
+          <div class="composer-row">
+            <textarea id="question" rows="2" placeholder="点击这里进入问答；Enter 发送，Shift+Enter 换行" disabled></textarea>
+            <button id="askButton" class="send-button" type="submit" aria-label="发送问题" disabled>↑</button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <div id="asrSettingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="asrSettingsTitle">
+      <section class="modal-card settings-card">
+        <header class="modal-header">
+          <div><strong id="asrSettingsTitle">阿里云实时转写</strong><span>只影响语音识别，不影响问答模型</span></div>
+          <button id="closeAsrSettingsButton" class="icon-button" type="button" aria-label="关闭阿里云转写设置">×</button>
+        </header>
+        <form id="asrSettingsForm" class="modal-body">
+          <p class="privacy-note">API Key 只保存在本机 Companion 服务，不进入浏览器存储、Session、逐字稿、日志或导出文件。</p>
+          <label>DashScope API Key
+            <span class="password-row">
+              <input id="asrApiKey" class="field" type="password" maxlength="2000" autocomplete="off" placeholder="请输入 API Key">
+              <button id="toggleAsrApiKeyButton" class="icon-button" type="button" aria-label="显示或隐藏 ASR API Key">◉</button>
+            </span>
+            <small id="asrApiKeyHint">界面不会读取或回显已保存的密钥。</small>
+          </label>
+          <div class="settings-grid">
+            <label>地域
+              <select id="asrRegion">
+                <option value="cn-beijing">华北2（北京）</option>
+                <option value="ap-southeast-1">新加坡（国际）</option>
+              </select>
+            </label>
+            <label>实时模型
+              <select id="asrModel">
+                <option value="qwen-audio-3.1-asr-flash-streaming">Qwen Audio 3.1 · 推荐</option>
+                <option value="qwen-audio-3.0-asr-flash-streaming">Qwen Audio 3.0 · 固定价</option>
+              </select>
+            </label>
+          </div>
+          <label>专业词上下文
+            <textarea id="asrTerms" class="field terms-field" maxlength="400" rows="4" placeholder="ETH Zurich, Robot Learning, vision-language model, policy"></textarea>
+            <small>用逗号或换行分隔；会同时作为专业词上下文和即时热词发送。</small>
+          </label>
+          <label class="form-check-row">
+            <input id="asrUsePageContext" type="checkbox" checked>
+            <span>自动加入网页标题和最近确认的逐字稿</span>
+          </label>
+          <section class="limit-rules">
+            <strong>生效规则</strong>
+            <p>3.1 按实际 Token 计费；3.0 北京地域约 ¥1.19/小时。</p>
+            <p>保存后的配置只影响新建 Session，当前正在采集的 Session 不会中途切换引擎。</p>
+          </section>
+          <div id="asrSettingsStatus" class="form-status" aria-live="polite"></div>
+          <div class="settings-actions">
+            <button id="testAsrConfigButton" class="button" type="button">测试连接</button>
+            <button class="button primary" type="submit">验证并保存</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <div id="historyModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
+      <section class="modal-card history-card">
+        <header class="modal-header">
+          <div><strong id="historyTitle">历史 Session</strong><span>重命名、查看或删除本地记录</span></div>
+          <button id="closeHistoryButton" class="icon-button" type="button" aria-label="关闭历史 Session">×</button>
+        </header>
+        <div class="modal-body">
+          <input id="historySearch" class="field" type="search" placeholder="搜索标题或网址">
+          <div id="archiveList" class="archive-list empty-state">正在读取历史 Session…</div>
+
+          <form id="renameForm" class="inline-editor hidden">
+            <label for="renameInput">重命名 Session</label>
+            <input id="renameInput" class="field" type="text" maxlength="500" required>
+            <div class="form-actions">
+              <button id="cancelRenameButton" class="button" type="button">取消</button>
+              <button class="button primary" type="submit">保存名称</button>
+            </div>
+          </form>
+
+        </div>
+      </section>
+    </div>
+
+    <dialog id="deleteDialog" class="delete-dialog" aria-labelledby="deleteTitle">
+      <header class="modal-header">
+        <div><strong id="deleteTitle">删除这个 Session？</strong><span>删除后无法在应用内恢复</span></div>
+        <button id="cancelDeleteIconButton" class="icon-button" type="button" aria-label="取消删除">×</button>
+      </header>
+      <div class="delete-dialog-body">
+        <div id="deleteTargetTitle" class="delete-target-title"></div>
+        <p>该 Session 的逐字稿和连续对话会一起删除，其他 Session 不受影响。</p>
+        <div id="deleteStatus" class="form-status" aria-live="polite"></div>
+        <div class="delete-dialog-actions">
+          <button id="cancelDeleteButton" class="button" type="button">取消</button>
+          <button id="confirmDeleteButton" class="button danger" type="button">确认删除</button>
+        </div>
+      </div>
+    </dialog>
+
+    <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <section class="modal-card settings-card">
+        <header class="modal-header">
+          <div><strong id="settingsTitle">对话模型</strong><span>用于问答，不影响本地实时转写</span></div>
+          <button id="closeSettingsButton" class="icon-button" type="button" aria-label="关闭对话模型设置">×</button>
+        </header>
+        <form id="settingsForm" class="modal-body">
+          <p class="privacy-note">配置只发送到本机 Companion 服务。API Key 不写入 Session、逐字稿、对话导出或浏览器存储。</p>
+          <label>服务类型
+            <select id="llmProvider">
+              <option value="qwen">Qwen</option>
+              <option value="volcengine">火山引擎</option>
+              <option value="custom">OpenAI Compatible / 自定义</option>
+            </select>
+          </label>
+          <label>Domain / Base URL
+            <input id="llmBaseUrl" class="field" type="url" maxlength="2000" required>
+          </label>
+          <label>API Key
+            <span class="password-row">
+              <input id="llmApiKey" class="field" type="password" maxlength="2000" autocomplete="off" placeholder="未修改时保持为空">
+              <button id="toggleApiKeyButton" class="icon-button" type="button" aria-label="显示或隐藏 API Key">◉</button>
+            </span>
+            <small id="apiKeyHint">界面不会读取或回显已保存的密钥。</small>
+          </label>
+          <label>Model
+            <input id="llmModel" class="field" type="text" maxlength="200" required>
+          </label>
+          <section class="limit-rules">
+            <strong>对话与上下文限制</strong>
+            <p>同一 Session 保留连续对话；每次提问单独选择是否发送逐字稿。</p>
+            <p>上下文超限时只裁剪逐字稿前半部分并重试一次，不循环重试。</p>
+          </section>
+          <div id="settingsStatus" class="form-status" aria-live="polite"></div>
+          <div class="settings-actions">
+            <button id="testConfigButton" class="button" type="button">测试连接</button>
+            <button class="button primary" type="submit">验证并保存</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <script src="markdown.js"></script>
+    <script src="sidepanel.js"></script>
+  </body>
+</html>
