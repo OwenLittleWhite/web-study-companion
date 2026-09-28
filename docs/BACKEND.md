@@ -24,11 +24,17 @@
 bash scripts/start-server.sh
 ```
 
-脚本进入 `server/` 后使用仓库自己的 `.venv/bin/python` 启动。默认监听
-`127.0.0.1:8765`，不会暴露到局域网。
+这是轻量入口：脚本显式禁用启动时的本地模型预加载，进入 `server/` 后使用仓库自己的
+`.venv/bin/python` 启动。默认监听 `127.0.0.1:8765`，不会暴露到局域网。
 
-当 `FUNASR_PRELOAD=true` 且已安装 FunASR 时，应用会在接受请求前加载并预热模型。这能减少第一
-段音频的冷启动等待，但会增加服务启动时间。
+需要本地模型时运行：
+
+```bash
+bash scripts/start-server-local-asr.sh
+```
+
+本地入口显式启用预加载；已安装 FunASR 时，应用会在接受请求前加载并预热模型。这能减少第一段
+音频的冷启动等待，但会增加服务启动时间和内存/GPU 占用。
 
 ## HTTP API
 

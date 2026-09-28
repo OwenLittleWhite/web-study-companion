@@ -59,12 +59,18 @@ bash scripts/bootstrap.sh
 .venv/bin/python -m pip install -r server/requirements-local-asr.txt
 ```
 
-只使用云端 ASR 时，在 `.env` 中设置 `FUNASR_PRELOAD=false`，可避免启动时加载本地模型。
-
 ### 3. 启动服务
+
+轻量启动本机 API 和云端 ASR 能力，不预加载本地模型：
 
 ```bash
 bash scripts/start-server.sh
+```
+
+需要本地 FunASR 时，使用独立入口启动服务并预加载、预热模型：
+
+```bash
+bash scripts/start-server-local-asr.sh
 ```
 
 看到 `Application startup complete` 后，在另一个终端检查：
@@ -108,7 +114,7 @@ Windows 浏览器加载 WSL 目录时，可使用：
 ```dotenv
 DASHSCOPE_API_KEY=
 FUNASR_DEVICE=cuda:0
-FUNASR_PRELOAD=true
+FUNASR_PRELOAD=false
 COMPANION_HOST=127.0.0.1
 COMPANION_PORT=8765
 COMPANION_DATA_DIR=./data

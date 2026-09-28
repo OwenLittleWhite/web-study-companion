@@ -55,7 +55,7 @@ class Settings:
     qwen_llm_model: str = os.getenv("QWEN_LLM_MODEL", "qwen-plus")
     funasr_model: str = os.getenv("FUNASR_MODEL", "paraformer-zh-streaming")
     funasr_device: str = os.getenv("FUNASR_DEVICE", "cuda:0")
-    funasr_preload: bool = env_flag("FUNASR_PRELOAD", True)
+    funasr_preload: bool = env_flag("FUNASR_PRELOAD", False)
 
 
 settings = Settings()

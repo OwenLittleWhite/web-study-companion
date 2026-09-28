@@ -64,7 +64,7 @@ API Key 可留空，启动后在侧边栏的“阿里云识别”配置中填写
 .venv/bin/python -m pip install -r server/requirements-local-asr.txt
 ```
 
-默认配置为：
+本地模型配置为：
 
 ```dotenv
 FUNASR_MODEL=paraformer-zh-streaming
@@ -77,11 +77,26 @@ FUNASR_PRELOAD=true
 
 ## 5. 启动与停止后端
 
+### 轻量启动：只启动服务
+
 在仓库根目录运行：
 
 ```bash
 bash scripts/start-server.sh
 ```
+
+该脚本会显式设置 `FUNASR_PRELOAD=false`，不受 `.env` 中旧值影响，也不会在服务启动阶段加载
+FunASR。HTTP API、Session、导出、云端 ASR 和问答仍然可用。如果随后选择本地 ASR，模型会在
+第一次本地采集时才延迟加载，第一次等待时间会更长。
+
+### 本地模式：启动服务并预加载模型
+
+```bash
+bash scripts/start-server-local-asr.sh
+```
+
+该脚本会显式设置 `FUNASR_PRELOAD=true`，在 HTTP 服务开始接受请求前加载并预热本地模型。它会
+明显使用更多内存和 GPU 资源，只在确实需要本地识别时运行。
 
 健康检查：
 
@@ -95,7 +110,8 @@ curl http://127.0.0.1:8765/health
 - `providers.local-funasr.ready` 表示本地依赖是否可见；
 - `providers.qwen-cloud.ready` 表示云端 ASR 是否已有 Key。
 
-服务在当前终端以前台方式运行，使用 `Ctrl+C` 安全停止。项目目前没有后台守护或系统服务脚本。
+两个脚本都在当前终端以前台方式运行，使用 `Ctrl+C` 安全停止。项目目前没有后台守护或系统服务
+脚本。
 
 ## 6. 加载浏览器扩展
 

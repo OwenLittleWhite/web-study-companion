@@ -19,14 +19,20 @@ bash scripts/start-server.sh
 
 ## 服务启动很久，像是卡住
 
-当 `FUNASR_PRELOAD=true` 时，服务会在启动阶段下载、加载并预热本地模型。观察终端日志和 GPU
-占用，等待 `Application startup complete`。只使用云端识别时可设置：
+先确认使用的是哪个入口。轻量入口不会预加载模型：
 
-```dotenv
-FUNASR_PRELOAD=false
+```bash
+bash scripts/start-server.sh
 ```
 
-然后重启服务。
+只有下面的本地入口会在启动阶段下载、加载并预热模型：
+
+```bash
+bash scripts/start-server-local-asr.sh
+```
+
+本地入口下观察终端日志和 GPU 占用，等待 `Application startup complete`。如果 WSL 或终端整体
+消失，重新进入 WSL 后先用轻量入口启动，并检查 `journalctl -b -1`、`dmesg` 和 GPU 驱动状态。
 
 ## 本地识别不可用
 

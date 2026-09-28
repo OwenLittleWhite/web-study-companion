@@ -48,7 +48,9 @@ After extension changes:
 .venv/bin/python scripts/validate_extension.py
 ```
 
-For a server smoke test, start it with `scripts/start-server.sh`, call `/health`, then stop it.
+For a lightweight server smoke test, start it with `scripts/start-server.sh`, call `/health`, then stop it.
+Use `scripts/start-server-local-asr.sh` only when the task explicitly needs local model preload and GPU
+warm-up; the normal start script must remain safe from accidental model preload.
 Do not claim local ASR is working until a real audio sample produces non-empty text.
 
 ## Environment changes

@@ -95,12 +95,22 @@ PY
 
 ```bash
 cd /home/owen/code/study/projects/web-study-companion
+```
+
+轻量启动不加载本地模型：
+
+```bash
 bash scripts/start-server.sh
 ```
 
-默认 `FUNASR_PRELOAD=true`：服务会在监听 HTTP 前加载模型，并执行一次 GPU 预热。等待终端出现
-`Application startup complete` 后再点击扩展工具栏图标。仅使用云端 ASR 时，可以在 `.env`
-设置 `FUNASR_PRELOAD=false` 跳过本地模型预热。
+需要服务启动前加载并预热本地 FunASR 时，使用独立入口：
+
+```bash
+bash scripts/start-server-local-asr.sh
+```
+
+等待终端出现 `Application startup complete` 后再点击扩展工具栏图标。两个脚本会分别强制
+`FUNASR_PRELOAD=false/true`，不依赖 `.env` 中可能遗留的旧值。
 
 健康检查：
 
@@ -180,6 +190,21 @@ FUNASR_PRELOAD=false
 Node 做 JS lint，应先在项目内引入受控的新版本工具链并记录安装过程。
 
 ## 执行日志
+
+### 2026-09-28 — 拆分轻量服务与本地模型启动入口
+
+- 现象：用户运行原 `scripts/start-server.sh` 后终端整体消失；重新检查时 8765 已无监听，WSL
+  uptime 只有约 9 分钟，说明不只是 FastAPI 普通退出，WSL 实例在此前后发生了终止或重启。
+- 可见证据：上一 WSL boot 没有正常关机尾迹，也没有留下 OOM kill 记录；结束前最后一条内核异常
+  是 `misc dxg ... Ioctl failed: -75`，指向 WSL GPU 桥接。该证据不足以证明唯一根因，因此只记录为
+  “本地模型/CUDA 初始化相关的高可能性”，不写成已确认 OOM。
+- 根本交互问题：原默认 `FUNASR_PRELOAD=true`，而本机 `.env` 没有覆盖该字段，普通启动脚本会在
+  HTTP 监听前直接加载 FunASR 和预热 GPU，用户无法从脚本名称判断资源开销。
+- 修复：`scripts/start-server.sh` 现在强制 `FUNASR_PRELOAD=false`；新增
+  `scripts/start-server-local-asr.sh`，仅该入口强制加载并预热本地模型；Python 配置和
+  `.env.example` 的兜底默认也改为 `false`。
+- 数据边界：检查时正式服务已经不在运行；本次没有删除或改写 `data/`、Session、密钥配置或模型
+  缓存，也未安装、升级或删除依赖。
 
 ### 2026-09-27 — 扩展与服务 0.3.10 旧版续采时间轴兼容
 

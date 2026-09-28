@@ -13,7 +13,7 @@
 | `COMPANION_DATA_DIR` | `./data` | SQLite、Session 和本机配置目录；相对路径基于仓库根目录 |
 | `FUNASR_MODEL` | `paraformer-zh-streaming` | 本地 FunASR 模型名称或可解析路径 |
 | `FUNASR_DEVICE` | `cuda:0` | FunASR 设备；CPU 可尝试 `cpu` |
-| `FUNASR_PRELOAD` | `true` | 启动时是否加载并预热本地模型 |
+| `FUNASR_PRELOAD` | `false` | 直接运行 Python 服务时是否加载并预热本地模型 |
 | `DASHSCOPE_API_KEY` | 空 | Qwen ASR 和 Qwen 对话的首次默认 Key |
 | `QWEN_ASR_WS_URL` | 北京地域 WebSocket 地址 | 未保存侧边栏 ASR 配置时的默认端点 |
 | `QWEN_ASR_MODEL` | `qwen-audio-3.1-asr-flash-streaming` | 未保存配置时的默认流式 ASR 模型 |
@@ -37,6 +37,9 @@ FUNASR_MODEL=paraformer-zh-streaming
 FUNASR_DEVICE=cuda:0
 FUNASR_PRELOAD=false
 ```
+
+两个启动脚本会覆盖 `.env` 中的该字段：`start-server.sh` 强制为 `false`，
+`start-server-local-asr.sh` 强制为 `true`。这样脚本名称和实际资源占用始终一致。
 
 ## 本地 ASR
 
